@@ -17,7 +17,8 @@ export default class MessageForm extends React.Component {
     uploadState: "",
     uploadTask: null,
     storageRef: firebase.storage().ref(),
-    percentUploaded: 0
+    percentUploaded: 0,
+    typingRef: firebase.database().ref("typing")
   };
 
   openModal = () => this.setState({ modal: true });
@@ -47,9 +48,7 @@ export default class MessageForm extends React.Component {
 
   sendMessage = () => {
     const { getMessagesRef } = this.props;
-    const { message, channel } = this.state;
-
-    console.log(message);
+    const { message, channel, typingRef, user } = this.state;
 
     if (message) {
       this.setState({ loading: true });
@@ -63,6 +62,10 @@ export default class MessageForm extends React.Component {
             message: "",
             errors: []
           });
+          typingRef
+            .child(channel.id)
+            .child(user.uid)
+            .remove();
         })
         .catch(err => {
           console.error(err);
@@ -151,6 +154,23 @@ export default class MessageForm extends React.Component {
       });
   };
 
+  handleKeyDown = () => {
+    const { message, typingRef, channel, user } = this.state;
+    if (message !== "") {
+      console.log("TYPING");
+      typingRef
+        .child(channel.id)
+        .child(user.uid)
+        .set(user.displayName);
+    } else {
+      console.log(" NOT TYPING");
+      typingRef
+        .child(channel.id)
+        .child(user.uid)
+        .remove();
+    }
+  };
+
   render() {
     const {
       errors,
@@ -165,6 +185,7 @@ export default class MessageForm extends React.Component {
       <Segment className="message__form">
         <Input
           fluid
+          onKeyDown={this.handleKeyDown}
           name="message"
           onChange={this.handleChange}
           value={message}

@@ -23,7 +23,8 @@ class Channels extends React.Component {
     firstLoad: true,
     activeChannel: "",
     messagesRef: firebase.database().ref("messages"),
-    notifications: []
+    notifications: [],
+    typingRef: firebase.database().ref("typing")
   };
 
   componentDidMount() {
@@ -113,6 +114,10 @@ class Channels extends React.Component {
 
   changeChannel = channel => {
     this.setActiveChannel(channel);
+    this.state.typingRef
+      .child(this.state.channel.id)
+      .child(this.state.user.uid)
+      .remove();
     this.props.setCurrentChannel(channel);
     this.props.setPrivateChannel(false);
     this.setState({ channel });
@@ -125,7 +130,7 @@ class Channels extends React.Component {
     );
 
     if (index !== -1) {
-      let updateNotifications = [...this.state.notificatiosn];
+      let updateNotifications = [...this.state.notifications];
       updateNotifications[index].total = this.state.notifications[
         index
       ].lastKnownTotal;
