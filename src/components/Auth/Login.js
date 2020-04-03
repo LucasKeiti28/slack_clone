@@ -114,7 +114,7 @@ class Login extends React.Component {
             </Message>
           )}
           <Message>
-            Don't have an account? <Link to="/login">Register</Link>
+            Don't have an account? <Link to="/register">Register</Link>
           </Message>
         </Grid.Column>
       </Grid>
