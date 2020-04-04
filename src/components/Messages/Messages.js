@@ -8,6 +8,7 @@ import MessagesHeader from "./MessageHeader";
 import MessageForm from "./MessageForm";
 import Message from "./Message";
 import Typing from "./Typing";
+import Skeleton from "./Skeleton";
 
 class Messages extends React.Component {
   state = {
@@ -26,7 +27,8 @@ class Messages extends React.Component {
     usersRef: firebase.database().ref("users"),
     typingRef: firebase.database().ref("typing"),
     typingUsers: [],
-    connectedRef: firebase.database().ref(".info/connected")
+    connectedRef: firebase.database().ref(".info/connected"),
+    listeners: []
   };
 
   componentDidMount() {
@@ -38,11 +40,28 @@ class Messages extends React.Component {
     }
   }
 
+  // componentWillUnmount() {
+  //   this.removeListeners(this.state.listeners);
+  // }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.messagesEnd) {
       this.scrollToBottom();
     }
   }
+
+  // addToListeners = (id, ref, event) => {
+  //   const index = this.tate.listeners.findIndex(listener => {
+  //     return (
+  //       listener.id === id && listener.ref === ref && listener.event === event
+  //     );
+  //   });
+
+  //   if(index === -1 )
+  //   {
+  //     const newListener = {id, }
+  //   }
+  // };
 
   scrollToBottom = () => {
     this.messagesEnd.scrollIntoView({ behavior: "smooth" });
@@ -241,6 +260,15 @@ class Messages extends React.Component {
       </div>
     ));
 
+  displayMessageSkeleton = loading =>
+    loading ? (
+      <React.Fragment>
+        {[...Array(10)].map((_, i) => (
+          <Skeleton key={i} />
+        ))}
+      </React.Fragment>
+    ) : null;
+
   render() {
     const {
       messagesRef,
@@ -253,7 +281,8 @@ class Messages extends React.Component {
       searchLoading,
       isPrivateChannel,
       isChannelStarred,
-      typingUsers
+      typingUsers,
+      messagesLoading
     } = this.state;
 
     return (
@@ -270,6 +299,7 @@ class Messages extends React.Component {
 
         <Segment>
           <Comment.Group className="messages">
+            {this.displayMessageSkeleton(messagesLoading)}
             {searchTerms
               ? this.displayMessages(searchResults)
               : this.displayMessages(messages)}

@@ -21,14 +21,14 @@ export default class MessageForm extends React.Component {
     storageRef: firebase.storage().ref(),
     percentUploaded: 0,
     typingRef: firebase.database().ref("typing"),
-    emojiPicker: false
+    emojiPicker: false,
   };
 
   openModal = () => this.setState({ modal: true });
 
   closeModal = () => this.setState({ modal: false });
 
-  handleChange = event => {
+  handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
 
@@ -38,8 +38,8 @@ export default class MessageForm extends React.Component {
       user: {
         id: this.state.user.uid,
         name: this.state.user.displayName,
-        avatar: this.state.user.photoURL
-      }
+        avatar: this.state.user.photoURL,
+      },
     };
     if (fileUrl !== null) {
       message["image"] = fileUrl;
@@ -63,25 +63,22 @@ export default class MessageForm extends React.Component {
           this.setState({
             loading: false,
             message: "",
-            errors: []
+            errors: [],
           });
-          typingRef
-            .child(channel.id)
-            .child(user.uid)
-            .remove();
+          typingRef.child(channel.id).child(user.uid).remove();
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err);
           this.setState({
             loading: false,
-            errors: this.state.errors.concat(err)
+            errors: this.state.errors.concat(err),
           });
         });
     } else {
       this.setState({
         errors: this.state.errors.concat({
-          message: "Add a message"
-        })
+          message: "Add a message",
+        }),
       });
     }
   };
@@ -102,37 +99,37 @@ export default class MessageForm extends React.Component {
     this.setState(
       {
         uploadState: "uploading",
-        uploadTask: this.state.storageRef.child(filePath).put(file, metadata)
+        uploadTask: this.state.storageRef.child(filePath).put(file, metadata),
       },
       () => {
         this.state.uploadTask.on(
           "state_changed",
-          snap => {
+          (snap) => {
             const percentUploaded = Math.round(
               (snap.bytesTransferred / snap.totalBytes) * 100
             );
             this.setState({ percentUploaded });
           },
-          err => {
+          (err) => {
             console.error(err);
             this.setState({
               errors: this.state.errors.concat(err),
               uploadState: "error",
-              uploadTask: null
+              uploadTask: null,
             });
           },
           () => {
             this.state.uploadTask.snapshot.ref
               .getDownloadURL()
-              .then(downloadUrl => {
+              .then((downloadUrl) => {
                 this.sendFileMessage(downloadUrl, ref, pathToUpload);
               })
-              .catch(err => {
+              .catch((err) => {
                 console.error(err);
                 this.setState({
                   errors: this.state.errors.concat(err),
                   uploadState: "error",
-                  uploadTask: null
+                  uploadTask: null,
                 });
               });
           }
@@ -149,28 +146,25 @@ export default class MessageForm extends React.Component {
       .then(() => {
         this.setState({ uploadState: "done" });
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         this.setState({
-          errors: this.state.errors.concat(err)
+          errors: this.state.errors.concat(err),
         });
       });
   };
 
-  handleKeyDown = () => {
+  handleKeyDown = (event) => {
+    if (event.ctrlKey && event.keyCode === 13) {
+      this.sendMessage();
+    }
     const { message, typingRef, channel, user } = this.state;
     if (message !== "") {
       console.log("TYPING");
-      typingRef
-        .child(channel.id)
-        .child(user.uid)
-        .set(user.displayName);
+      typingRef.child(channel.id).child(user.uid).set(user.displayName);
     } else {
       console.log(" NOT TYPING");
-      typingRef
-        .child(channel.id)
-        .child(user.uid)
-        .remove();
+      typingRef.child(channel.id).child(user.uid).remove();
     }
   };
 
@@ -178,15 +172,15 @@ export default class MessageForm extends React.Component {
     this.setState({ emojiPicker: !this.state.emojiPicker });
   };
 
-  handleAddEmoji = emoji => {
+  handleAddEmoji = (emoji) => {
     const oldMessage = this.state.message;
     const newMessage = this.colonToUnicode(`${oldMessage} ${emoji.colons}`);
     this.setState({ message: newMessage, emojiPicker: false });
     setTimeout(() => this.messageInputRef.focus(), 0);
   };
 
-  colonToUnicode = message => {
-    return message.replace(/:[A-Za-z0-9_+-]+:/g, x => {
+  colonToUnicode = (message) => {
+    return message.replace(/:[A-Za-z0-9_+-]+:/g, (x) => {
       x = x.replace(/:/g, "");
       let emoji = emojiIndex.emojis[x];
       if (typeof emoji !== "undefined") {
@@ -208,7 +202,7 @@ export default class MessageForm extends React.Component {
       modal,
       uploadState,
       percentUploaded,
-      emojiPicker
+      emojiPicker,
     } = this.state;
 
     return (
@@ -228,7 +222,7 @@ export default class MessageForm extends React.Component {
           name="message"
           onChange={this.handleChange}
           value={message}
-          ref={node => (this.messageInputRef = node)}
+          ref={(node) => (this.messageInputRef = node)}
           style={{ marginBottom: "0.7em" }}
           label={
             <Button
@@ -239,7 +233,7 @@ export default class MessageForm extends React.Component {
           }
           labelPosition="left"
           className={
-            errors.some(error => error.message.includes("message"))
+            errors.some((error) => error.message.includes("message"))
               ? "error"
               : ""
           }
